@@ -3,7 +3,7 @@
  */
 var clusterConfig = {
     process : 64,
-    startPost : '6191930',
-    limitPost : '6196930'
+    startPost : '6199920',
+    limitPost : '6608180'
 };
 module.exports= clusterConfig;

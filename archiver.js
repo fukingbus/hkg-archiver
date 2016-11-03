@@ -7,6 +7,7 @@ var config = require('./config');
 var workers = {};
 //
 var currentProcess = config.startPost;
+var progressDone = false;
 //
 if (cluster.isMaster) {
     var clusterConfig = require('./config');
@@ -18,8 +19,14 @@ if (cluster.isMaster) {
     cluster.on('message', function (msg) {
         switch (msg.action){
             case 'doneJob':
-                    console.log('worker '+msg.pid+' successfully downloaded #'+msg.postID+' '+getProgress(msg.postID)+'%');
-                    dispatchJob(msg.pid);
+                    console.log('worker '+msg.pid+'- #'+msg.postID+' '+getProgress(msg.postID)+'%');
+                    if(currentProcess<=config.limitPost)
+                        dispatchJob(msg.pid);
+                    else{
+                        if(!progressDone)
+                            console.log('Download finished');
+                        progressDone = true;
+                    }
                 break;
             case 'init':
                     dispatchJob(msg.pid);
@@ -35,7 +42,6 @@ function getProgress(postID){
     return Math.floor(((total -config.limitPost  + postID)/total) *100);
 }
 function dispatchJob(pid){
-    if(currentProcess<=config.limitPost) {
         workers[pid].send({
             action: 'doWork',
             params: {
@@ -43,9 +49,6 @@ function dispatchJob(pid){
             }
         });
         currentProcess++;
-    }
-    else
-        console.log('Download finished');
 }
 module.exports = {
     isMasterCluster: cluster.isMaster

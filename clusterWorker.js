@@ -32,20 +32,22 @@ function doJob(postID) {
         }
         , function (err, httpResponse, body) {
             if(!err) {
-                var bodyObj = JSON.parse(body);
-                if (bodyObj.success) {
-                    fs.writeFile('./archive/' + postID + '.json', body, function (err) {
-                        if (err)
-                            writeLog(err);
-                        else
-                            reportJob(postID);
-                    });
-                }
-                else
-                    writeLog({message : bodyObj.error_msg + ' occured on post #'+postID});
+                fs.writeFile('./archive/' + postID + '.json', body, function (err) {
+                    if (err) {
+                        writeLog(err);
+                        setTimeout(function(){
+                            doJob(postID);
+                        },1000);
+                    }
+                    else {
+                        reportJob(postID);
+                    }
+                });
             }
-            else
+            else {
                 writeLog(err);
+                doJob(postID);
+            }
         });
 }
 function writeLog(err){
